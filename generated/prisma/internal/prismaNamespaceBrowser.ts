@@ -60,7 +60,8 @@ export const ModelName = {
   PaymentEvent: 'PaymentEvent',
   DownloadLog: 'DownloadLog',
   AuditLog: 'AuditLog',
-  StoreSetting: 'StoreSetting'
+  StoreSetting: 'StoreSetting',
+  UploadedFile: 'UploadedFile'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -222,6 +223,20 @@ export const StoreSettingScalarFieldEnum = {
 } as const
 
 export type StoreSettingScalarFieldEnum = (typeof StoreSettingScalarFieldEnum)[keyof typeof StoreSettingScalarFieldEnum]
+
+
+export const UploadedFileScalarFieldEnum = {
+  id: 'id',
+  fileName: 'fileName',
+  fileType: 'fileType',
+  fileSize: 'fileSize',
+  fileData: 'fileData',
+  url: 'url',
+  category: 'category',
+  createdAt: 'createdAt'
+} as const
+
+export type UploadedFileScalarFieldEnum = (typeof UploadedFileScalarFieldEnum)[keyof typeof UploadedFileScalarFieldEnum]
 
 
 export const SortOrder = {

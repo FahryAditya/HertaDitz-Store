@@ -406,7 +406,8 @@ export const ModelName = {
   PaymentEvent: 'PaymentEvent',
   DownloadLog: 'DownloadLog',
   AuditLog: 'AuditLog',
-  StoreSetting: 'StoreSetting'
+  StoreSetting: 'StoreSetting',
+  UploadedFile: 'UploadedFile'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -422,7 +423,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "adminUser" | "product" | "productVersion" | "order" | "orderItem" | "voucher" | "paymentEvent" | "downloadLog" | "auditLog" | "storeSetting"
+    modelProps: "adminUser" | "product" | "productVersion" | "order" | "orderItem" | "voucher" | "paymentEvent" | "downloadLog" | "auditLog" | "storeSetting" | "uploadedFile"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1166,6 +1167,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    UploadedFile: {
+      payload: Prisma.$UploadedFilePayload<ExtArgs>
+      fields: Prisma.UploadedFileFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.UploadedFileFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UploadedFilePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.UploadedFileFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UploadedFilePayload>
+        }
+        findFirst: {
+          args: Prisma.UploadedFileFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UploadedFilePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.UploadedFileFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UploadedFilePayload>
+        }
+        findMany: {
+          args: Prisma.UploadedFileFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UploadedFilePayload>[]
+        }
+        create: {
+          args: Prisma.UploadedFileCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UploadedFilePayload>
+        }
+        createMany: {
+          args: Prisma.UploadedFileCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.UploadedFileCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UploadedFilePayload>[]
+        }
+        delete: {
+          args: Prisma.UploadedFileDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UploadedFilePayload>
+        }
+        update: {
+          args: Prisma.UploadedFileUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UploadedFilePayload>
+        }
+        deleteMany: {
+          args: Prisma.UploadedFileDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.UploadedFileUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.UploadedFileUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UploadedFilePayload>[]
+        }
+        upsert: {
+          args: Prisma.UploadedFileUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$UploadedFilePayload>
+        }
+        aggregate: {
+          args: Prisma.UploadedFileAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateUploadedFile>
+        }
+        groupBy: {
+          args: Prisma.UploadedFileGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UploadedFileGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.UploadedFileCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.UploadedFileCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1348,6 +1423,20 @@ export const StoreSettingScalarFieldEnum = {
 } as const
 
 export type StoreSettingScalarFieldEnum = (typeof StoreSettingScalarFieldEnum)[keyof typeof StoreSettingScalarFieldEnum]
+
+
+export const UploadedFileScalarFieldEnum = {
+  id: 'id',
+  fileName: 'fileName',
+  fileType: 'fileType',
+  fileSize: 'fileSize',
+  fileData: 'fileData',
+  url: 'url',
+  category: 'category',
+  createdAt: 'createdAt'
+} as const
+
+export type UploadedFileScalarFieldEnum = (typeof UploadedFileScalarFieldEnum)[keyof typeof UploadedFileScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1550,6 +1639,20 @@ export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'J
 export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
     
 
+
+/**
+ * Reference to a field of type 'Bytes'
+ */
+export type BytesFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Bytes'>
+    
+
+
+/**
+ * Reference to a field of type 'Bytes[]'
+ */
+export type ListBytesFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Bytes[]'>
+    
+
 /**
  * Batch Payload for updateMany & deleteMany & createMany
  */
@@ -1711,6 +1814,7 @@ export type GlobalOmitConfig = {
   downloadLog?: Prisma.DownloadLogOmit
   auditLog?: Prisma.AuditLogOmit
   storeSetting?: Prisma.StoreSettingOmit
+  uploadedFile?: Prisma.UploadedFileOmit
 }
 
 /* Types for Logging */

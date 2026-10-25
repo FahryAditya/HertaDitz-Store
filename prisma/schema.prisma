@@ -205,3 +205,16 @@ model StoreSetting {
 
   @@map("store_settings")
 }
+
+model UploadedFile {
+  id        String   @id @default(cuid())
+  fileName  String
+  fileType  String
+  fileSize  Int
+  fileData  Bytes?
+  url       String?
+  category  String   @default("attachment")
+  createdAt DateTime @default(now())
+
+  @@map("uploaded_files")
+}

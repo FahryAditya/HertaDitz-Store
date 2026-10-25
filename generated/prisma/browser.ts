@@ -67,3 +67,8 @@ export type AuditLog = Prisma.AuditLogModel
  * 
  */
 export type StoreSetting = Prisma.StoreSettingModel
+/**
+ * Model UploadedFile
+ * 
+ */
+export type UploadedFile = Prisma.UploadedFileModel
