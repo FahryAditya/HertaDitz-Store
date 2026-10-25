@@ -64,20 +64,20 @@ const resetExpense = () => {
       <!-- Quick Nav Buttons -->
       <div class="flex items-center gap-2">
         <NuxtLink
+          to="/admin/produk/baru"
+          class="px-4 py-2 rounded-full bg-white text-[#0b0c12] hover:bg-gray-100 text-xs font-bold transition shadow-sm flex items-center gap-1.5"
+        >
+          <Icon name="lucide:plus" class="w-4 h-4" />
+          <span>+ Tambah Produk</span>
+        </NuxtLink>
+
+        <NuxtLink
           to="/"
           class="px-4 py-2 rounded-full bg-[#181926] hover:bg-[#25283c] border border-white/5 text-xs text-gray-300 hover:text-white transition flex items-center gap-1.5"
         >
           <Icon name="lucide:external-link" class="w-3.5 h-3.5 text-[#a7f3d0]" />
           <span>Buka Toko</span>
         </NuxtLink>
-
-        <button
-          type="button"
-          @click="cartStore.showToast('Fitur penarikan saldo Midtrans akan diproses')"
-          class="px-4 py-2 rounded-full bg-white text-[#0b0c12] hover:bg-gray-100 text-xs font-bold transition shadow-sm"
-        >
-          Tarik Dana
-        </button>
       </div>
     </div>
 
