@@ -1,9 +1,15 @@
+import 'dotenv/config'
 import { PrismaClient } from '../generated/prisma/client'
 import { PrismaPg } from '@prisma/adapter-pg'
 import argon2 from 'argon2'
 
 const prisma = new PrismaClient({
-  adapter: new PrismaPg({ connectionString: process.env.DATABASE_URL }),
+  adapter: new PrismaPg({
+    connectionString:
+      process.env.DATABASE_URL ||
+      process.env.PRISMA_DATABASE_URL ||
+      process.env.POSTGRES_URL,
+  }),
 })
 
 async function main() {
@@ -225,16 +231,18 @@ async function main() {
   ]
 
   for (const prod of products) {
-    const { versions, ...prodData } = prod
-    const p = await prisma.product.upsert({
+    const existing = await prisma.product.findUnique({
       where: { slug: prod.slug },
-      update: {},
-      create: {
-        ...prodData,
-        versions,
-      },
     })
-    console.log(`Created product: ${p.name} [${p.category}]`)
+
+    if (!existing) {
+      const p = await prisma.product.create({
+        data: prod,
+      })
+      console.log(`Created product: ${p.name} [${p.category}]`)
+    } else {
+      console.log(`Product already exists: ${existing.name}`)
+    }
   }
 
   // 4. Store Settings
