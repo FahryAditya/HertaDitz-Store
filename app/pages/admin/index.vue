@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { useCartStore } from '~/stores/cart'
 
+definePageMeta({
+  layout: 'admin',
+})
+
 const cartStore = useCartStore()
 
 const { data: statsRes } = await useFetch<any>('/api/admin/stats')

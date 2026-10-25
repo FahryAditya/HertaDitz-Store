@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { useCartStore } from '~/stores/cart'
 
+definePageMeta({
+  layout: 'admin',
+})
+
 const router = useRouter()
 const cartStore = useCartStore()
 
