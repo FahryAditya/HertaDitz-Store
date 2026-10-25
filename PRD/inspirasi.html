@@ -1,0 +1,923 @@
+
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ethereal — Financial Dashboard</title>
+    <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace'],
+                    },
+                    colors: {
+                        canvas: '#0b0c12',
+                        panel: '#161722',
+                        card: '#1e2030',
+                        cardHover: '#26293d',
+                    },
+                    borderRadius: {
+                        '3xl': '24px',
+                        '4xl': '32px',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Custom Design Tokens & Micro-animations */
+        :root {
+            --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-spring: cubic-bezier(0.34, 1.45, 0.64, 1);
+        }
+
+        body {
+            background: radial-gradient(circle at 15% 15%, #2a2438 0%, #171522 45%, #0d0e15 100%);
+            min-height: 100vh;
+            color: #ffffff;
+            overflow-x: hidden;
+            font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+        }
+
+        .tabular-nums {
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Balance Card Mesh Gradient */
+        .balance-gradient {
+            background: linear-gradient(125deg, #86efac 0%, #a7f3d0 35%, #d9f99d 75%, #bef264 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Decorative Abstract Shape on Balance Card */
+        .balance-shape-1 {
+            position: absolute;
+            right: -35px;
+            top: -15px;
+            width: 170px;
+            height: 220px;
+            background: rgba(16, 24, 16, 0.14);
+            border-radius: 38px;
+            transform: rotate(28deg);
+            pointer-events: none;
+            transition: transform 0.6s var(--ease-out-expo);
+        }
+        .balance-shape-2 {
+            position: absolute;
+            right: -55px;
+            bottom: -45px;
+            width: 150px;
+            height: 170px;
+            background: rgba(16, 24, 16, 0.22);
+            border-radius: 36px;
+            transform: rotate(-18deg);
+            pointer-events: none;
+            transition: transform 0.6s var(--ease-out-expo);
+        }
+        .balance-gradient:hover .balance-shape-1 {
+            transform: rotate(33deg) scale(1.05);
+        }
+        .balance-gradient:hover .balance-shape-2 {
+            transform: rotate(-12deg) scale(1.06);
+        }
+
+        /* Connected Gooey Pill Buttons */
+        .gooey-btn-group {
+            display: inline-flex;
+            align-items: center;
+            position: relative;
+        }
+        .gooey-bridge {
+            width: 12px;
+            height: 16px;
+            background: #ffffff;
+            margin: 0 -4px;
+            z-index: 1;
+            mask-image: radial-gradient(circle at 50% -4px, transparent 6px, black 6.5px),
+                        radial-gradient(circle at 50% 20px, transparent 6px, black 6.5px);
+            mask-composite: intersect;
+            -webkit-mask-composite: destination-in;
+        }
+
+        /* Bar Chart Grow Animation */
+        .bar-grow {
+            transform-origin: bottom;
+            transform: scaleY(0);
+            animation: growBar 0.75s var(--ease-out-expo) forwards;
+        }
+        @keyframes growBar {
+            to { transform: scaleY(1); }
+        }
+
+        /* Pulse Ring for Active Bar */
+        .ring-pulse {
+            box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7);
+            animation: pulseRing 2s infinite;
+        }
+        @keyframes pulseRing {
+            0% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.7); }
+            70% { box-shadow: 0 0 0 8px rgba(255, 255, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 255, 255, 0); }
+        }
+
+        /* Stacked Credit Cards Transition */
+        .credit-card-item {
+            transition: transform 0.5s var(--ease-out-expo), opacity 0.5s var(--ease-out-expo), filter 0.5s ease, box-shadow 0.5s ease;
+            will-change: transform, opacity;
+            cursor: pointer;
+        }
+
+        /* Glassmorphic Overlay Card */
+        .glass-card-bottom {
+            background: linear-gradient(180deg, rgba(139, 122, 232, 0.55) 0%, rgba(58, 52, 114, 0.75) 65%, rgba(26, 27, 41, 0.95) 100%);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border-top: 1px solid rgba(255, 255, 255, 0.25);
+        }
+
+        /* Donut Chart Segment Animation */
+        .donut-segment {
+            transition: stroke-dashoffset 1s var(--ease-out-expo), stroke-width 0.25s ease, opacity 0.25s ease;
+            cursor: pointer;
+        }
+        .donut-segment:hover {
+            stroke-width: 19;
+        }
+
+        /* Subtle Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 9999px;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+    </style>
+</head>
+<body class="p-3 sm:p-6 md:p-10 flex items-center justify-center min-h-screen select-none">
+
+    <!-- Tablet / App Outer Bezel Frame -->
+    <div class="w-full max-w-[1220px] bg-[#090a0f] rounded-[36px] sm:rounded-[48px] p-3 sm:p-5 md:p-7 border-[6px] sm:border-[10px] border-[#1f212d] shadow-[0_35px_90px_rgba(0,0,0,0.85)] relative overflow-hidden">
+
+        <!-- TOP NAVIGATION BAR -->
+        <header class="flex flex-wrap items-center justify-between gap-4 mb-6 px-2">
+            <!-- Brand Logo -->
+            <a href="#" class="flex items-center gap-2.5 group focus:outline-none">
+                <div class="w-8 h-8 rounded-xl bg-white/10 flex items-center justify-center border border-white/10 group-hover:border-white/30 transition">
+                    <svg class="w-5 h-5 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 7h12M4 12h16M6 17h12" />
+                    </svg>
+                </div>
+                <span class="text-lg font-semibold tracking-tight text-white">ethereal</span>
+            </a>
+
+            <!-- Center Floating Pill Nav -->
+            <nav class="relative bg-[#171824] p-1.5 rounded-full border border-white/5 flex items-center gap-1 order-3 lg:order-2 w-full lg:w-auto justify-center overflow-x-auto">
+                <!-- Animated Active Indicator -->
+                <div id="nav-indicator" class="absolute left-1.5 top-1.5 bottom-1.5 bg-white rounded-full transition-all duration-300 ease-out pointer-events-none" style="width: 112px; transform: translateX(0px);"></div>
+
+                <button onclick="switchTab(this, 0)" class="nav-tab relative z-10 px-4 py-1.5 rounded-full text-xs font-semibold text-[#0b0c12] transition-colors duration-200 flex items-center gap-1.5 whitespace-nowrap">
+                    <span class="w-1.5 h-1.5 rounded-full bg-[#0b0c12] nav-dot"></span>
+                    Dashboard
+                </button>
+                <button onclick="switchTab(this, 1)" class="nav-tab relative z-10 px-4 py-1.5 rounded-full text-xs font-medium text-gray-400 hover:text-white transition-colors duration-200 whitespace-nowrap">
+                    Statistics
+                </button>
+                <button onclick="switchTab(this, 2)" class="nav-tab relative z-10 px-4 py-1.5 rounded-full text-xs font-medium text-gray-400 hover:text-white transition-colors duration-200 whitespace-nowrap">
+                    Transactions
+                </button>
+                <button onclick="switchTab(this, 3)" class="nav-tab relative z-10 px-4 py-1.5 rounded-full text-xs font-medium text-gray-400 hover:text-white transition-colors duration-200 whitespace-nowrap">
+                    My wallet
+                </button>
+            </nav>
+
+            <!-- Right Action Icons & Avatar -->
+            <div class="flex items-center gap-2.5 order-2 lg:order-3">
+                <button onclick="showToast('Search bar opened (Cmd + K)')" class="w-9 h-9 rounded-full bg-[#181926] hover:bg-[#232538] border border-white/5 flex items-center justify-center text-gray-300 hover:text-white transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path stroke-linecap="round" d="m21 21-4.3-4.3"></path>
+                    </svg>
+                </button>
+                <button onclick="showToast('You have 2 unread notifications')" class="relative w-9 h-9 rounded-full bg-[#181926] hover:bg-[#232538] border border-white/5 flex items-center justify-center text-gray-300 hover:text-white transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                    <span class="absolute top-2 right-2.5 w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
+                </button>
+                <button onclick="showToast('Logged in as Micky Larson')" class="w-9 h-9 rounded-full p-0.5 bg-gradient-to-tr from-pink-500 to-violet-500 hover:scale-105 transition">
+                    <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&q=80" 
+                         onerror="this.src='https://placehold.co/100x100/ec4899/ffffff?text=ML'"
+                         alt="User profile" class="w-full h-full object-cover rounded-full">
+                </button>
+            </div>
+        </header>
+
+        <!-- MAIN DASHBOARD GRID -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+
+            <!-- LEFT / MAIN CONTENT (8 COLUMNS) -->
+            <div class="lg:col-span-8 flex flex-col gap-5">
+                
+                <!-- Dashboard Main Heading -->
+                <div class="px-1">
+                    <h1 class="text-[28px] sm:text-[32px] font-semibold tracking-[-0.03em] text-white leading-tight">My Dashboard</h1>
+                </div>
+
+                <!-- TOP ROW: TOTAL BALANCE + INCOME/EXPENSE -->
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                    
+                    <!-- Total Balance Card (7 Cols) -->
+                    <div class="md:col-span-7 balance-gradient rounded-[28px] p-6 text-[#0b0c12] flex flex-col justify-between min-h-[215px] shadow-lg">
+                        <div class="balance-shape-1"></div>
+                        <div class="balance-shape-2"></div>
+
+                        <div class="relative z-10">
+                            <span class="text-sm font-semibold text-[#0b0c12]/80">Total balance</span>
+                            <div class="mt-2 flex items-baseline gap-1">
+                                <span id="balance-counter" class="text-3xl sm:text-[34px] font-bold tracking-[-0.03em] tabular-nums">120,456,50</span>
+                                <span class="text-lg font-bold -translate-y-3">$</span>
+                            </div>
+                            <p class="mt-1.5 text-[11px] font-medium text-[#0b0c12]/70">+$2,456 revenue from last month</p>
+                        </div>
+
+                        <!-- Bottom Action Buttons -->
+                        <div class="relative z-10 flex items-center gap-2.5 mt-6">
+                            <button onclick="triggerTransfer()" class="px-5 py-2.5 rounded-full bg-[#0b0c12] text-white text-xs font-semibold hover:bg-[#1c1e2b] active:scale-95 transition shadow-md">
+                                Transfer
+                            </button>
+
+                            <!-- Connected Gooey White Top Up Button -->
+                            <div class="gooey-btn-group">
+                                <button onclick="triggerTopUp()" class="px-4 py-2.5 rounded-full bg-white text-[#0b0c12] text-xs font-semibold hover:bg-gray-50 active:scale-95 transition shadow-sm">
+                                    Top Up
+                                </button>
+                                <div class="gooey-bridge"></div>
+                                <button onclick="triggerTopUp()" aria-label="Quick Top Up" class="w-9 h-9 rounded-full bg-white text-[#0b0c12] flex items-center justify-center hover:bg-gray-50 active:scale-95 transition shadow-sm">
+                                    <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="8"></circle>
+                                        <path stroke-linecap="round" d="M12 9v6m-3-3h6"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Income & Expense Stacked Cards (5 Cols) -->
+                    <div class="md:col-span-5 flex flex-col gap-3.5 justify-between">
+                        
+                        <!-- Income Card -->
+                        <div class="bg-gradient-to-br from-[#232734] to-[#181a24] border border-white/10 rounded-[24px] p-4 flex flex-col justify-between flex-1 hover:border-white/20 transition group">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-medium text-gray-300">Income</span>
+                                <span class="w-2 h-2 rounded-full bg-emerald-400/40 group-hover:bg-emerald-400 transition"></span>
+                            </div>
+                            <div class="my-1 flex items-baseline gap-0.5">
+                                <span class="text-xl sm:text-2xl font-semibold tracking-tight text-white tabular-nums">+2,456</span>
+                                <span class="text-xs font-semibold text-gray-300 -translate-y-2">$</span>
+                            </div>
+                            <div class="flex items-center justify-between mt-1">
+                                <span class="text-[11px] text-gray-400">This week's income</span>
+                                <span class="px-2.5 py-0.5 rounded-full bg-[#a3e635] text-[#0b0c12] text-[10px] font-bold">
+                                    +15.7%
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Expense Card -->
+                        <div class="bg-gradient-to-br from-[#232230] to-[#171822] border border-white/10 rounded-[24px] p-4 flex flex-col justify-between flex-1 hover:border-white/20 transition group">
+                            <div class="flex items-center justify-between">
+                                <span class="text-xs font-medium text-gray-300">Expense</span>
+                                <span class="w-2 h-2 rounded-full bg-rose-400/40 group-hover:bg-rose-400 transition"></span>
+                            </div>
+                            <div class="my-1 flex items-baseline gap-0.5">
+                                <span class="text-xl sm:text-2xl font-semibold tracking-tight text-white tabular-nums">-1,124</span>
+                                <span class="text-xs font-semibold text-gray-300 -translate-y-2">$</span>
+                            </div>
+                            <div class="flex items-center justify-between mt-1">
+                                <span class="text-[11px] text-gray-400">This week's income</span>
+                                <span class="px-2.5 py-0.5 rounded-full bg-[#f87171] text-[#0b0c12] text-[10px] font-bold">
+                                    -10.7%
+                                </span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- MIDDLE ROW: REVENUE FLOW + EXPENSE SPLIT -->
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                    
+                    <!-- Revenue Flow Bar Chart (6 Cols) -->
+                    <div class="md:col-span-6 bg-[#181926] border border-white/10 rounded-[28px] p-5 flex flex-col justify-between min-h-[260px]">
+                        <!-- Header -->
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-base font-semibold text-white">Revenue flow</h2>
+                            <div class="flex items-center gap-1.5">
+                                <button onclick="randomizeChart()" class="px-3 py-1 rounded-full bg-[#252738] hover:bg-[#2f3247] text-[11px] font-medium text-gray-300 transition">
+                                    Monthly
+                                </button>
+                                <button onclick="randomizeChart()" aria-label="Expand Revenue Flow" class="w-7 h-7 rounded-full bg-white text-[#0b0c12] flex items-center justify-center hover:scale-105 transition">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M7 17L17 7M9 7h8v8"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Interactive Bars Container -->
+                        <div class="relative pt-10 pb-1 flex items-end justify-between gap-2.5 h-[195px]">
+                            
+                            <!-- Floating Tooltip Pill -->
+                            <div id="chart-tooltip" class="absolute -top-0 right-1 z-20 bg-[#262338]/95 backdrop-blur-md border border-white/15 rounded-2xl px-3 py-1.5 shadow-xl flex items-center gap-2 transition-all duration-300">
+                                <div class="w-4 h-4 rounded-full bg-white text-[#0b0c12] flex items-center justify-center text-[9px] font-bold">$</div>
+                                <div>
+                                    <div id="tooltip-amount" class="text-[11px] font-bold text-white leading-none tabular-nums">$2,456.00</div>
+                                    <div id="tooltip-growth" class="text-[9px] text-emerald-400 font-medium leading-tight mt-0.5">+16%</div>
+                                </div>
+                            </div>
+
+                            <!-- Bar 1: Apr -->
+                            <div onclick="selectBar(0, '$4,120.00', '+19%')" class="bar-col flex-1 flex flex-col items-center gap-2 cursor-pointer group">
+                                <div class="w-full bg-[#5b4d78]/50 group-hover:bg-[#715f94]/70 rounded-2xl h-[108px] flex items-end justify-center pb-2.5 bar-grow transition-all" style="animation-delay: 0.05s;">
+                                    <span class="text-[10px] font-medium text-gray-300 tabular-nums">+$4.1K</span>
+                                </div>
+                                <span class="text-[11px] text-gray-400">Apr</span>
+                            </div>
+
+                            <!-- Bar 2: May -->
+                            <div onclick="selectBar(1, '$2,240.00', '+8%')" class="bar-col flex-1 flex flex-col items-center gap-2 cursor-pointer group">
+                                <div class="w-full bg-[#5b4d78]/50 group-hover:bg-[#715f94]/70 rounded-2xl h-[82px] flex items-end justify-center pb-2.5 bar-grow transition-all" style="animation-delay: 0.12s;">
+                                    <span class="text-[10px] font-medium text-gray-300 tabular-nums">+$2.2K</span>
+                                </div>
+                                <span class="text-[11px] text-gray-400">May</span>
+                            </div>
+
+                            <!-- Bar 3: Jun -->
+                            <div onclick="selectBar(2, '$3,510.00', '+14%')" class="bar-col flex-1 flex flex-col items-center gap-2 cursor-pointer group">
+                                <div class="w-full bg-[#5b4d78]/50 group-hover:bg-[#715f94]/70 rounded-2xl h-[126px] flex items-end justify-center pb-2.5 bar-grow transition-all" style="animation-delay: 0.19s;">
+                                    <span class="text-[10px] font-medium text-gray-300 tabular-nums">+$3.5K</span>
+                                </div>
+                                <span class="text-[11px] text-gray-400">Jun</span>
+                            </div>
+
+                            <!-- Bar 4: Jul -->
+                            <div onclick="selectBar(3, '$1,280.00', '-4%')" class="bar-col flex-1 flex flex-col items-center gap-2 cursor-pointer group">
+                                <div class="w-full bg-[#5b4d78]/50 group-hover:bg-[#715f94]/70 rounded-2xl h-[62px] flex items-end justify-center pb-2.5 bar-grow transition-all" style="animation-delay: 0.26s;">
+                                    <span class="text-[10px] font-medium text-gray-300 tabular-nums">+$1.2K</span>
+                                </div>
+                                <span class="text-[11px] text-gray-400">Jul</span>
+                            </div>
+
+                            <!-- Bar 5: Aug (Active Highlighted) -->
+                            <div onclick="selectBar(4, '$2,456.00', '+16%')" class="bar-col flex-1 flex flex-col items-center gap-2 cursor-pointer group">
+                                <div class="w-full bg-gradient-to-b from-[#d8b4fe] to-[#c084fc] rounded-2xl h-[116px] flex flex-col items-center justify-between py-2.5 bar-grow shadow-[0_0_25px_rgba(192,132,252,0.4)] transition-all" style="animation-delay: 0.33s;">
+                                    <span class="w-3.5 h-3.5 rounded-full border-2 border-white bg-[#c084fc] ring-pulse"></span>
+                                    <span class="text-[10px] font-bold text-[#0b0c12] tabular-nums">+$2.4K</span>
+                                </div>
+                                <span class="text-[11px] text-white font-semibold">Aug</span>
+                            </div>
+
+                        </div>
+                    </div>
+
+                    <!-- Expense Split Donut Chart (6 Cols) -->
+                    <div class="md:col-span-6 bg-[#181926] border border-white/10 rounded-[28px] p-5 flex flex-col justify-between min-h-[260px]">
+                        <!-- Header -->
+                        <div class="flex items-center justify-between">
+                            <h2 class="text-base font-semibold text-white">Expense split</h2>
+                            <button onclick="cycleExpenseMonth(this)" class="px-3.5 py-1 rounded-full bg-[#252738] hover:bg-[#2f3247] text-[11px] font-medium text-gray-300 transition">
+                                Aug
+                            </button>
+                        </div>
+
+                        <!-- Donut SVG + Category Legend -->
+                        <div class="flex items-center justify-between gap-3 my-auto py-2">
+                            
+                            <!-- Multi-segment SVG Donut -->
+                            <div class="relative w-[132px] h-[132px] flex items-center justify-center shrink-0">
+                                <svg class="w-full h-full -rotate-90" viewBox="0 0 120 120">
+                                    <!-- Background Track -->
+                                    <circle cx="60" cy="60" r="46" fill="transparent" stroke="#252738" stroke-width="15"></circle>
+                                    
+                                    <!-- Circumference = 2 * pi * 46 ≈ 289 -->
+                                    <!-- Food 30% (86.7) -->
+                                    <circle onmouseenter="highlightExpense('Food', '337')" onmouseleave="resetExpense()"
+                                            class="donut-segment" cx="60" cy="60" r="46" fill="transparent"
+                                            stroke="#facc15" stroke-width="15" stroke-dasharray="82 289" stroke-dashoffset="0" stroke-linecap="round"></circle>
+                                    
+                                    <!-- Bills 20% (57.8) -->
+                                    <circle onmouseenter="highlightExpense('Bills', '225')" onmouseleave="resetExpense()"
+                                            class="donut-segment" cx="60" cy="60" r="46" fill="transparent"
+                                            stroke="#fb923c" stroke-width="15" stroke-dasharray="53 289" stroke-dashoffset="-87" stroke-linecap="round"></circle>
+
+                                    <!-- Transportation 15% (43.3) -->
+                                    <circle onmouseenter="highlightExpense('Transport', '169')" onmouseleave="resetExpense()"
+                                            class="donut-segment" cx="60" cy="60" r="46" fill="transparent"
+                                            stroke="#60a5fa" stroke-width="15" stroke-dasharray="39 289" stroke-dashoffset="-145" stroke-linecap="round"></circle>
+
+                                    <!-- Miscellaneous 15% (43.3) -->
+                                    <circle onmouseenter="highlightExpense('Misc', '169')" onmouseleave="resetExpense()"
+                                            class="donut-segment" cx="60" cy="60" r="46" fill="transparent"
+                                            stroke="#818cf8" stroke-width="15" stroke-dasharray="39 289" stroke-dashoffset="-189" stroke-linecap="round"></circle>
+
+                                    <!-- Entertainment 10% (28.9) -->
+                                    <circle onmouseenter="highlightExpense('Fun', '112')" onmouseleave="resetExpense()"
+                                            class="donut-segment" cx="60" cy="60" r="46" fill="transparent"
+                                            stroke="#f472b6" stroke-width="15" stroke-dasharray="25 289" stroke-dashoffset="-233" stroke-linecap="round"></circle>
+
+                                    <!-- Health 10% (28.9) -->
+                                    <circle onmouseenter="highlightExpense('Health', '112')" onmouseleave="resetExpense()"
+                                            class="donut-segment" cx="60" cy="60" r="46" fill="transparent"
+                                            stroke="#c084fc" stroke-width="15" stroke-dasharray="24 289" stroke-dashoffset="-263" stroke-linecap="round"></circle>
+                                </svg>
+
+                                <!-- Center Total Label -->
+                                <div class="absolute inset-0 flex flex-col items-center justify-center text-center pointer-events-none">
+                                    <span id="donut-label" class="text-[11px] text-gray-400">Total</span>
+                                    <div class="flex items-baseline gap-0.5">
+                                        <span id="donut-value" class="text-base font-bold text-white tabular-nums">1,124</span>
+                                        <span class="text-[10px] font-semibold text-gray-300 -translate-y-1">$</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 2-Column Legend Grid -->
+                            <div class="grid grid-cols-2 gap-x-4 gap-y-3 flex-1">
+                                <div>
+                                    <div class="text-[10px] text-gray-400">Food</div>
+                                    <div class="flex items-center gap-1.5 mt-0.5">
+                                        <span class="w-0.5 h-3 bg-yellow-400 rounded-full"></span>
+                                        <span class="text-xs font-semibold text-white tabular-nums">30%</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="text-[10px] text-gray-400">Entertainment</div>
+                                    <div class="flex items-center gap-1.5 mt-0.5">
+                                        <span class="w-0.5 h-3 bg-pink-400 rounded-full"></span>
+                                        <span class="text-xs font-semibold text-white tabular-nums">10%</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="text-[10px] text-gray-400">Health</div>
+                                    <div class="flex items-center gap-1.5 mt-0.5">
+                                        <span class="w-0.5 h-3 bg-purple-400 rounded-full"></span>
+                                        <span class="text-xs font-semibold text-white tabular-nums">10%</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="text-[10px] text-gray-400">Transportation</div>
+                                    <div class="flex items-center gap-1.5 mt-0.5">
+                                        <span class="w-0.5 h-3 bg-blue-400 rounded-full"></span>
+                                        <span class="text-xs font-semibold text-white tabular-nums">15%</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="text-[10px] text-gray-400">Bills</div>
+                                    <div class="flex items-center gap-1.5 mt-0.5">
+                                        <span class="w-0.5 h-3 bg-orange-400 rounded-full"></span>
+                                        <span class="text-xs font-semibold text-white tabular-nums">20%</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="text-[10px] text-gray-400">Miscellaneous</div>
+                                    <div class="flex items-center gap-1.5 mt-0.5">
+                                        <span class="w-0.5 h-3 bg-indigo-400 rounded-full"></span>
+                                        <span class="text-xs font-semibold text-white tabular-nums">15%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- BOTTOM ROW: RECENT TRANSACTIONS -->
+                <div class="bg-[#181926] border border-white/10 rounded-[28px] p-5">
+                    <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-baseline gap-1.5">
+                            <h2 class="text-base font-semibold text-white">Recent transactions</h2>
+                            <span class="text-[11px] font-semibold text-gray-400">234</span>
+                        </div>
+                        <button onclick="showToast('Viewing all 234 transactions')" class="text-xs font-medium text-gray-400 hover:text-white flex items-center gap-1 transition">
+                            See All
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Transaction Row Item -->
+                    <div class="flex flex-wrap items-center justify-between gap-3 py-2 px-3 rounded-2xl bg-[#1f2130]/70 hover:bg-[#25283a] border border-white/5 transition">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-full bg-[#13141f] flex items-center justify-center text-white border border-white/10">
+                                <!-- Telegram Paper Plane SVG -->
+                                <svg class="w-4 h-4 -translate-x-0.5" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M21.5 2.5 2 10.2l6.8 2.6 10-7.3-7.8 8.7v5.3l4.2-3.9 4.3 3.2 2-16.3z"/>
+                                </svg>
+                            </div>
+                            <span class="text-xs font-medium text-white">Telegram</span>
+                        </div>
+
+                        <span class="px-3 py-1 rounded-full bg-[#a3e635] text-[#0b0c12] text-[10px] font-bold">
+                            Successful
+                        </span>
+
+                        <span class="text-[11px] text-gray-400 tabular-nums hidden sm:inline">04.07.2023 12:40 AM</span>
+
+                        <span class="text-[11px] text-gray-400 font-mono hidden md:inline">**4352</span>
+
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-semibold text-white tabular-nums">-$4.99</span>
+                            <button onclick="showToast('Transaction receipt downloaded')" class="text-gray-400 hover:text-white">
+                                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- RIGHT SIDEBAR PANEL: MY CARDS & SUBSCRIPTIONS (4 COLUMNS) -->
+            <div class="lg:col-span-4 bg-[#181926] border border-white/10 rounded-[32px] p-5 flex flex-col justify-between gap-6">
+                
+                <!-- MY CARDS SECTION -->
+                <div>
+                    <div class="flex items-center justify-between mb-5">
+                        <div class="flex items-baseline gap-1">
+                            <h2 class="text-base font-semibold text-white">My cards</h2>
+                            <span class="text-[11px] font-semibold text-gray-400">3</span>
+                        </div>
+
+                        <!-- Gooey Connected Add Button -->
+                        <div class="gooey-btn-group">
+                            <button onclick="rotateCards()" class="px-3.5 py-1.5 rounded-full bg-white text-[#0b0c12] text-[11px] font-semibold hover:bg-gray-100 transition">
+                                Add
+                            </button>
+                            <div class="gooey-bridge"></div>
+                            <button onclick="rotateCards()" aria-label="Add Card" class="w-7 h-7 rounded-full bg-white text-[#0b0c12] flex items-center justify-center hover:bg-gray-100 transition font-bold text-sm">
+                                +
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Stacked Cards Deck (Click to Cycle) -->
+                    <div id="card-stack" onclick="rotateCards()" title="Click to shuffle cards" class="relative h-[220px] w-full pt-2 select-none">
+                        
+                        <!-- Card 1 (Back - Coral Orange Mastercard) -->
+                        <div data-card="0" class="credit-card-item absolute inset-x-5 top-0 h-[130px] rounded-[22px] bg-gradient-to-r from-[#fb923c] to-[#fdba74] p-4 text-[#0b0c12] shadow-md flex justify-between items-start">
+                            <div class="flex items-center">
+                                <span class="w-5 h-5 rounded-full bg-[#0b0c12]/80 inline-block"></span>
+                                <span class="w-5 h-5 rounded-full bg-[#0b0c12]/40 -ml-2 inline-block"></span>
+                            </div>
+                            <span class="text-[11px] font-mono font-semibold">**** 8248</span>
+                        </div>
+
+                        <!-- Card 2 (Middle - Mint PayPal) -->
+                        <div data-card="1" class="credit-card-item absolute inset-x-2.5 top-[26px] h-[140px] rounded-[24px] bg-gradient-to-r from-[#7dd3fc] via-[#86efac] to-[#bef264] p-4 text-[#0b0c12] shadow-lg flex justify-between items-start">
+                            <span class="text-xs font-extrabold italic tracking-tight">PayPal</span>
+                            <span class="text-xs font-mono font-semibold">**** 4352</span>
+                        </div>
+
+                        <!-- Card 3 (Front Active - Purple Visa + Frosted Glass Overlay) -->
+                        <div data-card="2" class="credit-card-item absolute inset-x-0 top-[56px] h-[162px] rounded-[26px] bg-gradient-to-br from-[#c084fc] via-[#818cf8] to-[#4f46e5] text-white shadow-[0_18px_35px_rgba(99,102,241,0.35)] overflow-hidden flex flex-col justify-between">
+                            <div class="p-4 flex justify-between items-center">
+                                <span class="text-base font-extrabold italic tracking-wider">VISA</span>
+                                <span class="text-xs font-mono text-white/90">**** 6902</span>
+                            </div>
+
+                            <!-- Frosted Glass Bottom Half -->
+                            <div class="glass-card-bottom p-4 rounded-t-[22px]">
+                                <div class="text-[13px] font-mono tracking-[0.07em] text-white font-medium">
+                                    4156 6727 1439 6902
+                                </div>
+                                <div class="flex items-center gap-6 mt-2 text-[11px] text-gray-200/80">
+                                    <span>Micky Larson</span>
+                                    <span class="font-mono">07/25</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- SUBSCRIPTIONS SECTION -->
+                <div class="pt-1">
+                    <div class="flex items-center justify-between mb-3.5">
+                        <div class="flex items-baseline gap-1">
+                            <h2 class="text-base font-semibold text-white">Subscriptions</h2>
+                            <span class="text-[11px] font-semibold text-gray-400">5</span>
+                        </div>
+                        <button onclick="showToast('Subscription manager opened')" class="text-xs font-medium text-gray-400 hover:text-white flex items-center gap-1 transition">
+                            Manage
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Overlapping Brand App Avatars -->
+                    <div class="flex items-center mb-5 pl-1">
+                        <!-- Discord -->
+                        <div class="w-9 h-9 rounded-full bg-[#5865F2] border-2 border-[#181926] flex items-center justify-center text-white hover:-translate-y-1 transition cursor-pointer shadow">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M19.3 5.3A16.5 16.5 0 0 0 15.2 4l-.5 1a15 15 0 0 0-5.4 0L8.8 4a16.5 16.5 0 0 0-4.1 1.3C2.1 9.1 1.4 12.8 1.7 16.5A16.7 16.7 0 0 0 6.8 19l1-1.5a10.7 10.7 0 0 1-1.7-.8l.4-.3a11.8 11.8 0 0 0 11 0l.4.3c-.5.3-1.1.6-1.7.8l1 1.5a16.6 16.6 0 0 0 5.1-2.5c.4-4.3-.7-8-2-11.2ZM8.5 14.2c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Zm7 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Z"/>
+                            </svg>
+                        </div>
+                        <!-- Apple -->
+                        <div class="w-9 h-9 -ml-2 rounded-full bg-[#0b0c12] border-2 border-[#181926] flex items-center justify-center text-white hover:-translate-y-1 transition cursor-pointer shadow">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.53 4.08ZM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25Z"/>
+                            </svg>
+                        </div>
+                        <!-- Spotify -->
+                        <div class="w-9 h-9 -ml-2 rounded-full bg-[#1DB954] border-2 border-[#181926] flex items-center justify-center text-[#0b0c12] hover:-translate-y-1 transition cursor-pointer shadow">
+                            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20Zm4.6 14.4c-.2.3-.6.4-.9.2-2.5-1.5-5.6-1.9-9.3-1-.4.1-.7-.2-.8-.5-.1-.4.2-.7.5-.8 4-.9 7.5-.5 10.3 1.2.3.2.4.6.2.9Zm1.2-2.7c-.2.4-.7.5-1.1.3-2.8-1.7-7.1-2.2-10.4-1.2-.4.1-.9-.1-1-.5-.1-.4.1-.9.5-1 3.8-1.1 8.5-.6 11.7 1.4.4.1.5.6.3 1Zm.1-2.8C14.6 8.9 9.2 8.7 6 9.7c-.5.2-1-.1-1.2-.6-.2-.5.1-1 .6-1.2 3.7-1.1 9.7-.9 13.5 1.3.5.3.6.9.3 1.3-.3.5-.8.6-1.3.4Z"/>
+                            </svg>
+                        </div>
+                        <!-- Dribbble -->
+                        <div class="w-9 h-9 -ml-2 rounded-full bg-[#EA4C89] border-2 border-[#181926] flex items-center justify-center text-white hover:-translate-y-1 transition cursor-pointer shadow">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <circle cx="12" cy="12" r="9"></circle>
+                                <path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72m2.54-15.38c-3.72 4.35-8.94 5.66-16.88 5.85m19.5 1.9c-3.5-.93-6.63-.82-8.94 0-2.58.92-5.01 2.86-7.44 6.32"></path>
+                            </svg>
+                        </div>
+                        <!-- Telegram -->
+                        <div class="w-9 h-9 -ml-2 rounded-full bg-[#26A5E4] border-2 border-[#181926] flex items-center justify-center text-white hover:-translate-y-1 transition cursor-pointer shadow">
+                            <svg class="w-4 h-4 -translate-x-0.5" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M21.5 2.5 2 10.2l6.8 2.6 10-7.3-7.8 8.7v5.3l4.2-3.9 4.3 3.2 2-16.3z"/>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Subscription Items Container -->
+                    <div class="bg-[#202232]/80 border border-white/5 rounded-[24px] p-2.5 space-y-2 max-h-[215px] overflow-y-auto">
+                        
+                        <!-- Item 1: iCloud -->
+                        <div class="flex items-center justify-between p-2.5 rounded-2xl bg-[#272a3d]/70 hover:bg-[#2f334a] transition">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-xl bg-[#181926] flex items-center justify-center text-white">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.53 4.08ZM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.29 2.58-2.34 4.5-3.74 4.25Z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="text-xs font-semibold text-white">iCloud</div>
+                                    <div class="text-[10px] text-gray-400">Next 15 July</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-semibold text-white tabular-nums">$2.99</span>
+                                <button class="text-gray-400 hover:text-white">
+                                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                                        <circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Item 2: Discord Nitro -->
+                        <div class="flex items-center justify-between p-2.5 rounded-2xl bg-[#272a3d]/70 hover:bg-[#2f334a] transition">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-xl bg-[#181926] flex items-center justify-center text-white">
+                                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M19.3 5.3A16.5 16.5 0 0 0 15.2 4l-.5 1a15 15 0 0 0-5.4 0L8.8 4a16.5 16.5 0 0 0-4.1 1.3C2.1 9.1 1.4 12.8 1.7 16.5A16.7 16.7 0 0 0 6.8 19l1-1.5a10.7 10.7 0 0 1-1.7-.8l.4-.3a11.8 11.8 0 0 0 11 0l.4.3c-.5.3-1.1.6-1.7.8l1 1.5a16.6 16.6 0 0 0 5.1-2.5c.4-4.3-.7-8-2-11.2ZM8.5 14.2c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Zm7 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="text-xs font-semibold text-white">Discord Nitro</div>
+                                    <div class="text-[10px] text-gray-400">Next 19 July</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-semibold text-white tabular-nums">$8.99</span>
+                                <button class="text-gray-400 hover:text-white">
+                                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                                        <circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Item 3: Telegram -->
+                        <div class="flex items-center justify-between p-2.5 rounded-2xl bg-[#272a3d]/70 hover:bg-[#2f334a] transition">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-xl bg-[#181926] flex items-center justify-center text-white">
+                                    <svg class="w-4 h-4 -translate-x-0.5" fill="currentColor" viewBox="0 0 24 24">
+                                        <path d="M21.5 2.5 2 10.2l6.8 2.6 10-7.3-7.8 8.7v5.3l4.2-3.9 4.3 3.2 2-16.3z"/>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="text-xs font-semibold text-white">Telegram</div>
+                                    <div class="text-[10px] text-gray-400">Next 04 August</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-semibold text-white tabular-nums">$4.99</span>
+                                <button class="text-gray-400 hover:text-white">
+                                    <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24">
+                                        <circle cx="12" cy="5" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="12" cy="19" r="1.8"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Item 4: Dribbble Pro -->
+                        <div class="flex items-center justify-between p-2.5 rounded-2xl bg-[#272a3d]/40 hover:bg-[#2f334a] transition">
+                            <div class="flex items-center gap-3">
+                                <div class="w-8 h-8 rounded-xl bg-[#181926] flex items-center justify-center text-pink-400">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                        <circle cx="12" cy="12" r="9"></circle>
+                                        <path d="M8.56 2.75c4.37 6.03 6.02 9.42 8.03 17.72"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <div class="text-xs font-semibold text-white">Dribbble</div>
+                                    <div class="text-[10px] text-gray-400">Next 12 August</div>
+                                </div>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-semibold text-white tabular-nums">$12.00</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- Custom Non-blocking Toast Notification -->
+        <div id="toast-box" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 bg-white text-[#0b0c12] px-5 py-2.5 rounded-full shadow-2xl text-xs font-semibold flex items-center gap-2 opacity-0 pointer-events-none transition-all duration-300 translate-y-4">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+            <span id="toast-text">Action completed</span>
+        </div>
+
+    </div>
+
+    <!-- INTERACTIVE MOTION & UI LOGIC -->
+    <script>
+        // 1. Floating Navigation Pill Indicator
+        function switchTab(buttonEl, index) {
+            const indicator = document.getElementById('nav-indicator');
+            const tabs = document.querySelectorAll('.nav-tab');
+
+            tabs.forEach((t) => {
+                t.classList.remove('text-[#0b0c12]', 'font-semibold');
+                t.classList.add('text-gray-400', 'font-medium');
+                const dot = t.querySelector('.nav-dot');
+                if (dot) dot.remove();
+            });
+
+            buttonEl.classList.remove('text-gray-400', 'font-medium');
+            buttonEl.classList.add('text-[#0b0c12]', 'font-semibold');
+
+            // Prepend black indicator dot inside active tab
+            const dot = document.createElement('span');
+            dot.className = 'w-1.5 h-1.5 rounded-full bg-[#0b0c12] nav-dot';
+            buttonEl.prepend(dot);
+
+            // Calculate position relative to nav container
+            const parentRect = buttonEl.parentElement.getBoundingClientRect();
+            const btnRect = buttonEl.getBoundingClientRect();
+            const offsetLeft = btnRect.left - parentRect.left - 6;
+
+            indicator.style.width = `${btnRect.width}px`;
+            indicator.style.transform = `translateX(${offsetLeft}px)`;
+        }
+
+        // 2. Interactive Bar Chart Selection
+        function selectBar(index, amount, growth) {
+            const tooltipAmount = document.getElementById('tooltip-amount');
+            const tooltipGrowth = document.getElementById('tooltip-growth');
+            const tooltip = document.getElementById('chart-tooltip');
+
+            tooltip.style.transform = 'scale(0.92)';
+            setTimeout(() => {
+                tooltipAmount.textContent = amount;
+                tooltipGrowth.textContent = growth;
+                tooltipGrowth.className = growth.startsWith('-') 
+                    ? 'text-[9px] text-rose-400 font-medium leading-tight mt-0.5'
+                    : 'text-[9px] text-emerald-400 font-medium leading-tight mt-0.5';
+                tooltip.style.transform = 'scale(1)';
+            }, 120);
+        }
+
+        function randomizeChart() {
+            const bars = document.querySelectorAll('.bar-grow');
+            bars.forEach((bar) => {
+                const randomHeight = Math.floor(Math.random() * 75) + 55;
+                bar.style.height = `${randomHeight}px`;
+            });
+            showToast('Revenue flow updated');
+        }
+
+        // 3. Interactive Donut Chart Hover State
+        function highlightExpense(category, amount) {
+            document.getElementById('donut-label').textContent = category;
+            document.getElementById('donut-value').textContent = amount;
+        }
+
+        function resetExpense() {
+            document.getElementById('donut-label').textContent = 'Total';
+            document.getElementById('donut-value').textContent = '1,124';
+        }
+
+        const months = ['Aug', 'Sep', 'Oct', 'Jul'];
+        let monthIdx = 0;
+        function cycleExpenseMonth(btn) {
+            monthIdx = (monthIdx + 1) % months.length;
+            btn.textContent = months[monthIdx];
+            const totals = ['1,124', '980', '1,340', '1,050'];
+            document.getElementById('donut-value').textContent = totals[monthIdx];
+        }
+
+        // 4. Stacked Credit Cards Shuffle Animation
+        let cardOrder = [0, 1, 2];
+        function rotateCards() {
+            cardOrder.unshift(cardOrder.pop());
+            const cards = document.querySelectorAll('.credit-card-item');
+
+            const positions = [
+                { top: '0px', insetX: '20px', z: 10, scale: 0.92, opacity: 0.85 },
+                { top: '26px', insetX: '10px', z: 20, scale: 0.96, opacity: 0.95 },
+                { top: '56px', insetX: '0px', z: 30, scale: 1, opacity: 1 }
+            ];
+
+            cards.forEach((card, idx) => {
+                const slot = cardOrder.indexOf(idx);
+                const pos = positions[slot];
+                card.style.zIndex = pos.z;
+                card.style.top = pos.top;
+                card.style.transform = `scale(${pos.scale})`;
+                card.style.opacity = pos.opacity;
+            });
+        }
+
+        // 5. Balance Counter Animation on Top Up / Transfer
+        let currentBalance = 120456.50;
+        function formatEuroStyle(num) {
+            const parts = num.toFixed(2).split('.');
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            return parts.join(',');
+        }
+
+        function triggerTopUp() {
+            currentBalance += 500;
+            const el = document.getElementById('balance-counter');
+            el.textContent = formatEuroStyle(currentBalance);
+            showToast('+$500.00 added to Total Balance');
+        }
+
+        function triggerTransfer() {
+            currentBalance -= 250;
+            const el = document.getElementById('balance-counter');
+            el.textContent = formatEuroStyle(currentBalance);
+            showToast('-$250.00 transferred successfully');
+        }
+
+        // 6. Custom Toast Helper
+        let toastTimer = null;
+        function showToast(msg) {
+            const box = document.getElementById('toast-box');
+            const text = document.getElementById('toast-text');
+            text.textContent = msg;
+            box.classList.remove('opacity-0', 'translate-y-4');
+            box.classList.add('opacity-100', 'translate-y-0');
+
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => {
+                box.classList.remove('opacity-100', 'translate-y-0');
+                box.classList.add('opacity-0', 'translate-y-4');
+            }, 2400);
+        }
+    </script>
+</body>
+</html>

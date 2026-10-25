@@ -1,0 +1,207 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Category {
+  WEBSITE
+  STICKER
+  POSTER
+}
+
+enum ProductStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  EXPIRED
+  CANCELED
+  FAILED
+  REFUNDED
+}
+
+enum DiscountType {
+  PERCENT
+  FIXED
+}
+
+enum AdminRole {
+  SUPERADMIN
+  STAFF
+}
+
+model AdminUser {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         AdminRole @default(STAFF)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  auditLogs    AuditLog[]
+
+  @@map("admin_users")
+}
+
+model Product {
+  id           String           @id @default(cuid())
+  slug         String           @unique
+  name         String
+  category     Category
+  description  String           @db.Text
+  features     String[]         @default([])
+  price        Float
+  salePrice    Float?
+  saleStart    DateTime?
+  saleEnd      DateTime?
+  status       ProductStatus    @default(DRAFT)
+  featured     Boolean          @default(false)
+  sortOrder    Int              @default(0)
+  demoUrl      String?
+  previewPaths String[]         @default([])
+  licenseId    String?
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  versions     ProductVersion[]
+  orderItems   OrderItem[]
+
+  @@index([category, status])
+  @@index([featured])
+  @@map("products")
+}
+
+model ProductVersion {
+  id         String      @id @default(cuid())
+  productId  String
+  version    String      // e.g. "1.0.0"
+  filePath   String      // path di bucket privat 'products'
+  changelog  String?     @db.Text
+  isCurrent  Boolean     @default(true)
+  createdAt  DateTime    @default(now())
+
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+
+  @@index([productId, isCurrent])
+  @@map("product_versions")
+}
+
+model Order {
+  id            String         @id @default(cuid())
+  code          String         @unique // Unique visible code e.g. "HRT-20261025-XXXX"
+  buyerName     String
+  buyerEmail    String
+  status        OrderStatus    @default(PENDING)
+  subtotal      Float
+  discount      Float          @default(0)
+  total         Float
+  voucherId     String?
+  accessToken   String         // Hashed token
+  midtransRef   String?
+  paidAt        DateTime?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  voucher       Voucher?       @relation(fields: [voucherId], references: [id])
+  items         OrderItem[]
+  paymentEvents PaymentEvent[]
+  downloadLogs  DownloadLog[]
+
+  @@index([buyerEmail])
+  @@index([status])
+  @@map("orders")
+}
+
+model OrderItem {
+  id         String         @id @default(cuid())
+  orderId    String
+  productId  String
+  versionId  String
+  priceAtBuy Float
+
+  order      Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product    Product        @relation(fields: [productId], references: [id])
+  version    ProductVersion @relation(fields: [versionId], references: [id])
+  downloadLogs DownloadLog[]
+
+  @@map("order_items")
+}
+
+model Voucher {
+  id        String       @id @default(cuid())
+  code      String       @unique
+  type      DiscountType @default(PERCENT)
+  value     Float        // 10 for 10% or 50000 for Rp50k
+  minTotal  Float        @default(0)
+  maxUses   Int?
+  usedCount Int          @default(0)
+  startsAt  DateTime?
+  endsAt    DateTime?
+  active    Boolean      @default(true)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  orders    Order[]
+
+  @@map("vouchers")
+}
+
+model PaymentEvent {
+  id        String   @id @default(cuid())
+  orderId   String?
+  rawStatus String
+  payload   Json
+  valid     Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  order     Order?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@map("payment_events")
+}
+
+model DownloadLog {
+  id          String     @id @default(cuid())
+  orderId     String
+  orderItemId String
+  ip          String?
+  createdAt   DateTime   @default(now())
+
+  order       Order      @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  orderItem   OrderItem  @relation(fields: [orderItemId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@map("download_logs")
+}
+
+model AuditLog {
+  id        String     @id @default(cuid())
+  adminId   String?
+  action    String
+  target    String
+  diff      Json?
+  createdAt DateTime   @default(now())
+
+  admin     AdminUser? @relation(fields: [adminId], references: [id], onDelete: SetNull)
+
+  @@map("audit_logs")
+}
+
+model StoreSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("store_settings")
+}
